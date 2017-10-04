@@ -1,0 +1,28 @@
+Lai Yan Yung
+10/3/2017
+
+This assignment will only have one python file, server and client will be
+included in the same file. User uses the argument to determine which mode they
+are using. For the command line, server need to type in the mode, port number,
+word and ip. Client will need to provide mode, ip and port number.
+Server will initialize the board after it received the word and initialize the
+number of guesses remaining to from N( N=3) to K (which is the number of
+characters of the word). When N is bigger than 0, which means still have chances
+to guess, server will send the number N and K to the client, client displays
+the board and number of guesses remaining. Client will ask user to provide the
+guess and then send the guessed letter as a char to the server. If the letter
+is included in the secret word, the letter will replace the corresponding
+underscores, if no N is decremented. Player wins the game if N>0 and get all
+the letters. Then client will print the board one last time and print You won.
+Client will then close the socket and exit. If player loses the game. Client
+will do the same as player won but this time instead of print you won, the
+client will print you lose. The server need to handle multiple clients
+separately so fork is needed.
+
+I have never used python before so it is going be a big challenges for me,
+and I think the hardest part will be using fork and making the server to handle
+different client at the same time but separately.
+
+1)Office hour
+2)Mentor’s hour
+3)textbook and online resources
