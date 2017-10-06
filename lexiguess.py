@@ -60,7 +60,7 @@ if args.mode == "server":
                     break
 
             if check:   #if check is 1 client has won
-                c.send(str(255).encode('uft-8))
+                c.send(str(255).encode('uft-8'))
                 
             else:
                 #client has lost
