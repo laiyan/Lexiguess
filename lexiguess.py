@@ -34,30 +34,39 @@ if args.mode == "server":
         print ('Got connection from'), addr
         while check == 0 and n > 0:
             c.send(str(n).encode('uft-8'))
+            c.send(str(k).encode('uft-8'))
             c.send(board);
 
-            guess = c.recv(1,socket,MSG_WAITALL)
+            guess = c.recv(1,socket,MSG_WAITALL) #recieve guess letter
             check = 1
+            #check letter with the word
             for i in range(0,k):
-                if board[i] == guess:
+                if board[i] == guess:       #check letter is being guessed or not
                     check = 1;
                     break;
-                elif board[i] == "_ " and guess == word[i]:
+                
+                if board[i] == "_ " and guess == word[i]: #replace word by the guess letter
                     board[i] = guess
                     check =0
 
-            if check:
-                k = k-1
+            if check:       #if check is 1 decrement guess by 1
+                n = n-1
 
-            check = 1
+            check = 1       #reset check
 
-            for i range(0,k):
-                if board[i] == "_ "
-                check = 0
-                break
+            for i range(0,k):       #check is there still missing letter if yes keep the game
+                if board[i] == "_ ":
+                    check = 0       #do not decrement guess
+                    break
 
-            if check:
-                c.send(str(k).encode('uft-8'))
+            if check:   #if check is 1 client has won
+                c.send(str(255).encode('uft-8))
+                
+            else:
+                #client has lost
+                c.send(str(0).encode('uft-8'))
+                
+                
         c.close()                # Close the connection
     s.close()
 elif args.mode == "client":
@@ -68,7 +77,26 @@ elif args.mode == "client":
     port = args.port              # Reserve a port for your service.
 
     s.connect((host, port))
-    print(s.recv(4, socket.MSG_WAITALL))        #this is where client (or server) waits
+    n = s.recv(1, socket.MSG_WAITALL))
+    k = s.recv(1, socket.MSG_WAITALL))
+    board = s.recv(k,socket.MSG_WAITALL))
+    
+    while n != 0 and n != 255:
+        print(b'Board:' + board)
+        print(b"Enter guess: ", end"")
+        sys.stdout.flush()
+        l = sys.stdinreadline()
+        print(l)  #check letter is correct or not
+        s.send(l)
+        n = s.recv(1, socket.MSG_WAITALL))
+        k = s.recv(1, socket.MSG_WAITALL))
+        board = s.recv(k,socket.MSG_WAITALL))
+        
+    print(b'Board:' + board)
+    if n = 0:
+        print(b"You lost")
+    elif n = 255:
+        print(b" You won")
     s.close                     # Close the socket when done
 else:
     print("Error! Please choose server or client mode.")
