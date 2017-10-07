@@ -38,19 +38,24 @@ if args.mode == "server":
             c.send(str(k).encode('utf-8'))
             c.send(b.encode('utf-8'));
 
-            guess = c.recv(1,socket.MSG_WAITALL) #recieve guess letter
+            guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
             print(guess)
             check = 1
             #check letter with the word
             for i in range(0,k):
-                if board[i] == guess:       #check letter is being guessed or not
-                    check = 1;
+
+                if board[i] == guess:
+                    check = 1
                     break;
 
-                if board[i] == "_ " and guess == word[i]: #replace word by the guess letter
-                    board[i] = guess
-                    check =0
+                if board[i] == "_ " and word[i] == guess: #replace word by the guess letter
+                    board[i] = guess+" "
+                    check = 0
 
+
+            b = ''.join(board)
+            print(b)
+            print(check)
             if check:       #if check is 1 decrement guess by 1
                 n = n-1
 
@@ -61,12 +66,12 @@ if args.mode == "server":
                     check = 0       #do not decrement guess
                     break
 
-            if check:   #if check is 1 client has won
-                c.send(str(255).encode('utf-8'))
+        if check:   #if check is 1 client has won
+            c.send(str(255).encode('utf-8'))
 
-            else:
-                #client has lost
-                c.send(str(0).encode('utf-8'))
+        else:
+            #client has lost
+            c.send(str(0).encode('utf-8'))
 
 
         c.close()                # Close the connection
@@ -89,9 +94,12 @@ elif args.mode == "client":
         print(b'Board:' + board)
         print("Enter guess: ")
         l = sys.stdin.read(1)
-        print(l)  #check letter is correct or not
+        #l = l.rstrip()
         s.send(str(l).encode('utf-8'))
+        print(l)  #check letter is correct or not
+        print("sent")
         n = s.recv(1, socket.MSG_WAITALL)
+        print(n)
         k = s.recv(1, socket.MSG_WAITALL)
         print(b'k ='+k)
         board = s.recv(int(k)*2,socket.MSG_WAITALL)
