@@ -48,7 +48,6 @@ if args.mode == "server":
             c.send(b.encode('utf-8'));
 
             guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
-            print(guess)
             check = 1
             #check letter with the word
             for i in range(0,k):
@@ -63,8 +62,6 @@ if args.mode == "server":
 
 
             b = ''.join(board)
-            print(b)
-            print(check)
             if check:       #if check is 1 decrement guess by 1
                 n = n-1
 
@@ -76,12 +73,15 @@ if args.mode == "server":
                     break
 
         if check:   #if check is 1 client has won
-            c.send(str(255).encode('utf-8'))
+            c.send(str(5).encode('utf-8'))
+            c.send(str(k).encode('utf-8'))
+            c.send(b.encode('utf-8'));
 
         else:
             #client has lost
-            c.send(str(0).encode('utf-8'))
-
+            c.send(str(4).encode('utf-8'))
+            c.send(str(k).encode('utf-8'))
+            c.send(b.encode('utf-8'));
 
         c.close()                # Close the connection
     s.close()
@@ -95,27 +95,33 @@ elif args.mode == "client":
     s.connect((host, port))
     n = s.recv(1, socket.MSG_WAITALL)
     k = s.recv(1, socket.MSG_WAITALL)
-    print(b'k ='+k)
-    print(b'n ='+n)
     board = s.recv(int(k)*2,socket.MSG_WAITALL)
 
-    while n != 0 and n != 255:
-        print(b'Board:' + board)
+    n = n.decode('utf-8')
+    k = k.decode('utf-8')
+    print('k ='+k)
+    print('n ='+n)
+    N = int(n)
+    if N == 3:
+        print("YES")
+
+    while N != 4 and N != 5:
+        print("Board:" + board.decode('utf-8') + "(" + n + " guesses left)")
         l = getChar()
         s.send(str(l).encode('utf-8'))
-        print(l)  #check letter is correct or not
-        print("sent")
+        gn = n
         n = s.recv(1, socket.MSG_WAITALL)
-        print(n)
+        n = n.decode('utf-8')
+        N = int(n)
         k = s.recv(1, socket.MSG_WAITALL)
-        print(b'k ='+k)
         board = s.recv(int(k)*2,socket.MSG_WAITALL)
 
-    print(b'Board:' + board)
-    if n == 0:
-        print(b"You lost")
-    elif n == 255:
-        print(b" You won")
+
+    print("Board:" + board.decode('utf-8') + "(" + gn + " guesses left)")
+    if N == 4:
+        print("You lost")
+    elif N == 5:
+        print(" You won")
     s.close                     # Close the socket when done
 else:
     print("Error! Please choose server or client mode.")
