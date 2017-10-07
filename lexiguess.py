@@ -8,6 +8,15 @@ parser.add_argument("--port", type=int, metavar='p', help="port number")
 parser.add_argument("--word",metavar='w' ,help="word to be guessed")
 parser.add_argument("--ip",metavar='i' ,help="IP address for client")
 args = parser.parse_args()
+
+def getChar():
+    inputChar = input("Enter Guess: ")
+    allowedChars= 'abcdefghijklmnopqrstuvwxyz'
+    while (len(inputChar) != 1 or inputChar not in allowedChars):
+        inputChar =input("Enter Guess: ")
+    return inputChar
+
+
 if args.mode == "server":
     print ("server")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
@@ -92,9 +101,7 @@ elif args.mode == "client":
 
     while n != 0 and n != 255:
         print(b'Board:' + board)
-        print("Enter guess: ")
-        l = sys.stdin.read(1)
-        #l = l.rstrip()
+        l = getChar()
         s.send(str(l).encode('utf-8'))
         print(l)  #check letter is correct or not
         print("sent")
