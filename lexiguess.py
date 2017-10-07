@@ -1,4 +1,5 @@
 import argparse
+import sys
 import socket               # Import socket module
 
 parser = argparse.ArgumentParser(description='LexiGuess, Networked program with server-client options for guessing a word.')
@@ -33,18 +34,19 @@ if args.mode == "server":
         c, addr = s.accept()     # Establish connection with client. This where server waits
         print ('Got connection from'), addr
         while check == 0 and n > 0:
-            c.send(str(n).encode('uft-8'))
-            c.send(str(k).encode('uft-8'))
-            c.send(board);
+            c.send(str(n).encode('utf-8'))
+            c.send(str(k).encode('utf-8'))
+            c.send(b.encode('utf-8'));
 
-            guess = c.recv(1,socket,MSG_WAITALL) #recieve guess letter
+            guess = c.recv(1,socket.MSG_WAITALL) #recieve guess letter
+            print(guess)
             check = 1
             #check letter with the word
             for i in range(0,k):
                 if board[i] == guess:       #check letter is being guessed or not
                     check = 1;
                     break;
-                
+
                 if board[i] == "_ " and guess == word[i]: #replace word by the guess letter
                     board[i] = guess
                     check =0
@@ -54,19 +56,19 @@ if args.mode == "server":
 
             check = 1       #reset check
 
-            for i range(0,k):       #check is there still missing letter if yes keep the game
+            for i in range(0,k):       #check is there still missing letter if yes keep the game
                 if board[i] == "_ ":
                     check = 0       #do not decrement guess
                     break
 
             if check:   #if check is 1 client has won
-                c.send(str(255).encode('uft-8'))
-                
+                c.send(str(255).encode('utf-8'))
+
             else:
                 #client has lost
-                c.send(str(0).encode('uft-8'))
-                
-                
+                c.send(str(0).encode('utf-8'))
+
+
         c.close()                # Close the connection
     s.close()
 elif args.mode == "client":
@@ -77,25 +79,27 @@ elif args.mode == "client":
     port = args.port              # Reserve a port for your service.
 
     s.connect((host, port))
-    n = s.recv(1, socket.MSG_WAITALL))
-    k = s.recv(1, socket.MSG_WAITALL))
-    board = s.recv(k,socket.MSG_WAITALL))
-    
+    n = s.recv(1, socket.MSG_WAITALL)
+    k = s.recv(1, socket.MSG_WAITALL)
+    print(b'k ='+k)
+    print(b'n ='+n)
+    board = s.recv(int(k)*2,socket.MSG_WAITALL)
+
     while n != 0 and n != 255:
         print(b'Board:' + board)
-        print(b"Enter guess: ", end"")
-        sys.stdout.flush()
-        l = sys.stdinreadline()
+        print("Enter guess: ")
+        l = sys.stdin.read(1)
         print(l)  #check letter is correct or not
-        s.send(l)
-        n = s.recv(1, socket.MSG_WAITALL))
-        k = s.recv(1, socket.MSG_WAITALL))
-        board = s.recv(k,socket.MSG_WAITALL))
-        
+        s.send(str(l).encode('utf-8'))
+        n = s.recv(1, socket.MSG_WAITALL)
+        k = s.recv(1, socket.MSG_WAITALL)
+        print(b'k ='+k)
+        board = s.recv(int(k)*2,socket.MSG_WAITALL)
+
     print(b'Board:' + board)
-    if n = 0:
+    if n == 0:
         print(b"You lost")
-    elif n = 255:
+    elif n == 255:
         print(b" You won")
     s.close                     # Close the socket when done
 else:
