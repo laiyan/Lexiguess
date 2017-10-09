@@ -1,6 +1,7 @@
 import argparse
 import sys
 import socket               # Import socket module
+import os, signal #  Low level modules for threading and handling signals
 
 parser = argparse.ArgumentParser(description='LexiGuess, Networked program with server-client options for guessing a word.')
 parser.add_argument("--mode", action='store', metavar='m',help="client or server mode")
@@ -22,7 +23,7 @@ if args.mode == "server":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
     host = args.ip
     print(host)
-    port = socket.htons(args.port)                # Reserve a port for your service.
+    port = args.port                # Reserve a port for your service.
     s.bind((host, port))
     word = []        # Bind to the port
     word = args.word
@@ -90,7 +91,7 @@ elif args.mode == "client":
     s = socket.socket()         # Create a socket object
     host = args.ip            # Get local machine name
     print (host)
-    port = socket.htons(args.port)              # Reserve a port for your service.
+    port = args.port              # Reserve a port for your service.
 
     s.connect((host, port))
     n = s.recv(1, socket.MSG_WAITALL)
