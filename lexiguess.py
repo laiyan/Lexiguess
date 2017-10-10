@@ -87,6 +87,7 @@ if args.mode == "server":
             c.send(b.encode('utf-8'));
 
         c.close()                # Close the connection
+        exit()
     s.close()
 elif args.mode == "client":
     print ("client")
