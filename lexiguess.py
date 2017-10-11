@@ -40,10 +40,8 @@ if args.mode == "server":
     n = 3
     check = 0
     s.listen(5)                 # Now wait for client connection.
-    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
     while True:
-        os.fork()
         c, addr = s.accept()     # Establish connection with client. This where server waits
         print ('Got connection from'), addr
         while check == 0 and n > 0:
