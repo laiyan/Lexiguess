@@ -48,7 +48,7 @@ if args.mode == "server":
         print ('Got connection from'), addr
         while check == 0 and n > 0:
             c.send(str(n).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(k.to_bytes(4,'big'))
             c.send(b.encode('utf-8'));
 
             guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
@@ -78,13 +78,13 @@ if args.mode == "server":
 
         if check:   #if check is 1 client has won
             c.send(str(5).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(k.to_bytes(4,'big'))
             c.send(b.encode('utf-8'));
 
         else:
             #client has lost
             c.send(str(4).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(k.to_bytes(4,'big'))
             c.send(b.encode('utf-8'));
 
         c.close()                # Close the connection
@@ -99,8 +99,9 @@ elif args.mode == "client":
 
     s.connect((host, port))
     n = s.recv(1, socket.MSG_WAITALL)
-    k = s.recv(1, socket.MSG_WAITALL)
-    board = s.recv(int(k)*2,socket.MSG_WAITALL)
+    k =(s.recv(4, socket.MSG_WAITALL))
+    k = int.from_bytes(k, byteorder = 'big')
+    board = s.recv(k*2,socket.MSG_WAITALL)
 
     n = n.decode('utf-8')
     k = k.decode('utf-8')
@@ -118,8 +119,9 @@ elif args.mode == "client":
         n = s.recv(1, socket.MSG_WAITALL)
         n = n.decode('utf-8')
         N = int(n)
-        k = s.recv(1, socket.MSG_WAITALL)
-        board = s.recv(int(k)*2,socket.MSG_WAITALL)
+        k =(s.recv(4, socket.MSG_WAITALL))
+        k = int.from_bytes(k, byteorder = 'big')
+        board = s.recv(k*2,socket.MSG_WAITALL)
 
 
     print("Board:" + board.decode('utf-8') + "(" + gn + " guesses left)")
