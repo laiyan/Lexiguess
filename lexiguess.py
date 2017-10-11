@@ -33,7 +33,7 @@ if args.mode == "server":
     board = []
     for i in range(0,k):
         board.append(i)
-        board[i] = "_ "
+        board[i] = "_"
 
     b = ''.join(board)
     print(b)
@@ -60,8 +60,8 @@ if args.mode == "server":
                     check = 1
                     break;
 
-                if board[i] == "_ " and word[i] == guess: #replace word by the guess letter
-                    board[i] = guess+" "
+                if board[i] == "_" and word[i] == guess: #replace word by the guess letter
+                    board[i] = guess
                     check = 0
 
 
@@ -72,7 +72,7 @@ if args.mode == "server":
             check = 1       #reset check
 
             for i in range(0,k):       #check is there still missing letter if yes keep the game
-                if board[i] == "_ ":
+                if board[i] == "_":
                     check = 0       #do not decrement guess
                     break
 
