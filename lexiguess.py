@@ -63,7 +63,7 @@ if args.mode == "server":
                     break;
 
                 if board[i] == "_" and word[i] == guess: #replace word by the guess letter
-                    board[i] = guess+
+                    board[i] = guess
                     check = 0
 
 
@@ -88,7 +88,7 @@ if args.mode == "server":
             c.send(str(4).encode('utf-8'))
             c.send(struct.pack(">i",k))
             c.send(b.encode('utf-8'));
-            
+
         c.close()                # Close the connection
         exit()
     s.close()
