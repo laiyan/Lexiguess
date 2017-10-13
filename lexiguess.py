@@ -2,6 +2,7 @@ import argparse
 import sys
 import socket               # Import socket module
 import os, signal #  Low level modules for threading and handling signals
+import struct
 
 parser = argparse.ArgumentParser(description='LexiGuess, Networked program with server-client options for guessing a word.')
 parser.add_argument("--mode", action='store', metavar='m',help="client or server mode")
@@ -33,7 +34,7 @@ if args.mode == "server":
     board = []
     for i in range(0,k):
         board.append(i)
-        board[i] = "_ "
+        board[i] = "_"
 
     b = ''.join(board)
     print(b)
@@ -49,7 +50,7 @@ if args.mode == "server":
         print ('Got connection from'), addr
         while check == 0 and n > 0:
             c.send(str(n).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(struct.pack(">i",k))
             c.send(b.encode('utf-8'));
 
             guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
@@ -61,8 +62,8 @@ if args.mode == "server":
                     check = 1
                     break;
 
-                if board[i] == "_ " and word[i] == guess: #replace word by the guess letter
-                    board[i] = guess+" "
+                if board[i] == "_" and word[i] == guess: #replace word by the guess letter
+                    board[i] = guess+
                     check = 0
 
 
@@ -73,21 +74,21 @@ if args.mode == "server":
             check = 1       #reset check
 
             for i in range(0,k):       #check is there still missing letter if yes keep the game
-                if board[i] == "_ ":
+                if board[i] == "_":
                     check = 0       #do not decrement guess
                     break
 
         if check:   #if check is 1 client has won
             c.send(str(5).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(struct.pack(">i",k))
             c.send(b.encode('utf-8'));
 
         else:
             #client has lost
             c.send(str(4).encode('utf-8'))
-            c.send(str(k).encode('utf-8'))
+            c.send(struct.pack(">i",k))
             c.send(b.encode('utf-8'));
-
+            
         c.close()                # Close the connection
         exit()
     s.close()
@@ -100,12 +101,11 @@ elif args.mode == "client":
 
     s.connect((host, port))
     n = s.recv(1, socket.MSG_WAITALL)
-    k = s.recv(1, socket.MSG_WAITALL)
-    board = s.recv(int(k)*2,socket.MSG_WAITALL)
+    k =(s.recv(4, socket.MSG_WAITALL))
+    k = int.from_bytes(k, byteorder = 'big')
+    board = s.recv(k,socket.MSG_WAITALL)
 
     n = n.decode('utf-8')
-    k = k.decode('utf-8')
-    print('k ='+k)
     print('n ='+n)
     N = int(n)
     if N == 3:
@@ -119,8 +119,9 @@ elif args.mode == "client":
         n = s.recv(1, socket.MSG_WAITALL)
         n = n.decode('utf-8')
         N = int(n)
-        k = s.recv(1, socket.MSG_WAITALL)
-        board = s.recv(int(k)*2,socket.MSG_WAITALL)
+        k =(s.recv(4, socket.MSG_WAITALL))
+        k = int.from_bytes(k, byteorder = 'big')
+        board = s.recv(k,socket.MSG_WAITALL)
 
 
     print("Board:" + board.decode('utf-8') + "(" + gn + " guesses left)")
