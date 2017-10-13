@@ -43,8 +43,9 @@ if args.mode == "server":
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
     while True:
-        os.fork()
+
         c, addr = s.accept()     # Establish connection with client. This where server waits
+        os.fork()
         print ('Got connection from'), addr
         while check == 0 and n > 0:
             c.send(str(n).encode('utf-8'))
