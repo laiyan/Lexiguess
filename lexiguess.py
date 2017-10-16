@@ -33,11 +33,15 @@ def game():
     n = 3
     check = 0
     while check == 0 and n > 0:
+        c.send(struct.pack(">i",1))
         c.send(str(n).encode('utf-8'))
         c.send(struct.pack(">i",k))
         c.send(b.encode('utf-8'));
 
-        guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
+        h = (c.recv(4, socket.MSG_WAITALL))
+        h = int.from_bytes(h,byteorder = 'big')
+        guess = c.recv(h,socket.MSG_WAITALL) #recieve guess letter
+        guess = guess.decode('utf-8')
         check = 1
         #check letter with the word
         for i in range(0,k):
@@ -63,12 +67,14 @@ def game():
                 break
 
     if check:   #if check is 1 client has won
+        c.send(struct.pack(">i",1))
         c.send(str(5).encode('utf-8'))
         c.send(struct.pack(">i",k))
         c.send(b.encode('utf-8'));
 
     else:
         #client has lost
+        c.send(struct.pack(">i",1))
         c.send(str(4).encode('utf-8'))
         c.send(struct.pack(">i",k))
         c.send(b.encode('utf-8'));
@@ -99,7 +105,9 @@ elif args.mode == "client":
     port = args.port              # Reserve a port for your service.
 
     s.connect((host, port))
-    n = s.recv(1, socket.MSG_WAITALL)
+    h = (s.recv(4, socket.MSG_WAITALL))
+    h = int.from_bytes(h,byteorder = 'big')
+    n = s.recv(h,socket.MSG_WAITALL)
     k =(s.recv(4, socket.MSG_WAITALL))
     k = int.from_bytes(k, byteorder = 'big')
     board = s.recv(k,socket.MSG_WAITALL)
@@ -113,9 +121,12 @@ elif args.mode == "client":
     while N != 4 and N != 5:
         print("Board:" + board.decode('utf-8') + "(" + n + " guesses left)")
         l = getChar()
+        s.send(struct.pack(">i",1))
         s.send(str(l).encode('utf-8'))
         gn = n
-        n = s.recv(1, socket.MSG_WAITALL)
+        h = (s.recv(4, socket.MSG_WAITALL))
+        h = int.from_bytes(h,byteorder = 'big')
+        n = s.recv(h,socket.MSG_WAITALL)
         n = n.decode('utf-8')
         N = int(n)
         k =(s.recv(4, socket.MSG_WAITALL))
