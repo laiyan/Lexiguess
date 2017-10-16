@@ -18,14 +18,7 @@ def getChar():
         inputChar =input("Enter Guess: ")
     return inputChar
 
-
-if args.mode == "server":
-    print ("server")
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
-    host = args.ip
-    print(host)
-    port = args.port                # Reserve a port for your service.
-    s.bind((host, port))
+def game():
     word = []        # Bind to the port
     word = args.word
     k = len(word)
@@ -35,63 +28,69 @@ if args.mode == "server":
     for i in range(0,k):
         board.append(i)
         board[i] = "_"
-
     b = ''.join(board)
     print(b)
     n = 3
     check = 0
+    while check == 0 and n > 0:
+        c.send(str(n).encode('utf-8'))
+        c.send(struct.pack(">i",k))
+        c.send(b.encode('utf-8'));
+
+        guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
+        check = 1
+        #check letter with the word
+        for i in range(0,k):
+
+            if board[i] == guess:
+                check = 1
+                break;
+
+            if board[i] == "_" and word[i] == guess: #replace word by the guess letter
+                board[i] = guess
+                check = 0
+
+
+        b = ''.join(board)
+        if check:       #if check is 1 decrement guess by 1
+            n = n-1
+
+        check = 1       #reset check
+
+        for i in range(0,k):       #check is there still missing letter if yes keep the game
+            if board[i] == "_":
+                check = 0       #do not decrement guess
+                break
+
+    if check:   #if check is 1 client has won
+        c.send(str(5).encode('utf-8'))
+        c.send(struct.pack(">i",k))
+        c.send(b.encode('utf-8'));
+
+    else:
+        #client has lost
+        c.send(str(4).encode('utf-8'))
+        c.send(struct.pack(">i",k))
+        c.send(b.encode('utf-8'));
+
+if args.mode == "server":
+    print ("server")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
+    host = args.ip
+    print(host)
+    port = args.port                # Reserve a port for your service.
+    s.bind((host, port))
     s.listen(5)                 # Now wait for client connection.
-    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-    os.fork()
     while True:
-
         c, addr = s.accept()     # Establish connection with client. This where server waits
-
-        print ('Got connection from'), addr
-        while check == 0 and n > 0:
-            c.send(str(n).encode('utf-8'))
-            c.send(struct.pack(">i",k))
-            c.send(b.encode('utf-8'));
-
-            guess = c.recv(1,socket.MSG_WAITALL).decode('utf-8') #recieve guess letter
-            check = 1
-            #check letter with the word
-            for i in range(0,k):
-
-                if board[i] == guess:
-                    check = 1
-                    break;
-
-                if board[i] == "_" and word[i] == guess: #replace word by the guess letter
-                    board[i] = guess
-                    check = 0
-
-
-            b = ''.join(board)
-            if check:       #if check is 1 decrement guess by 1
-                n = n-1
-
-            check = 1       #reset check
-
-            for i in range(0,k):       #check is there still missing letter if yes keep the game
-                if board[i] == "_":
-                    check = 0       #do not decrement guess
-                    break
-
-        if check:   #if check is 1 client has won
-            c.send(str(5).encode('utf-8'))
-            c.send(struct.pack(">i",k))
-            c.send(b.encode('utf-8'));
-
-        else:
-            #client has lost
-            c.send(str(4).encode('utf-8'))
-            c.send(struct.pack(">i",k))
-            c.send(b.encode('utf-8'));
-
-        c.close()                # Close the connection
-        exit()
-    s.close()
+        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+        pid = os.fork()
+        if pid == 0:
+            print ('Got connection from'), addr
+            game()
+            c.close()                # Close the connection
+            exit()
+    #s.close()
 elif args.mode == "client":
     print ("client")
     s = socket.socket()         # Create a socket object
