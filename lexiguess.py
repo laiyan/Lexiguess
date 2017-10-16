@@ -25,8 +25,6 @@ def game():
     word = []        # Bind to the port
     word = args.word
     k = len(word)
-    print(word)
-    print(k)
     board = []
 
     #dashline for board
@@ -34,7 +32,6 @@ def game():
         board.append(i)
         board[i] = "_"
     b = ''.join(board)
-    print(b)
     n = 3
     check = 0
 
@@ -90,10 +87,8 @@ def game():
 
 #if arg is server
 if args.mode == "server":
-    print ("server")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
     host = args.ip
-    print(host)
     port = args.port                # Reserve a port for your service.
     s.bind((host, port))
     s.listen(5)                 # Now wait for client connection.
@@ -102,7 +97,6 @@ if args.mode == "server":
         signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         pid = os.fork()
         if pid == 0:
-            print ('Got connection from'), addr
             game()
             c.close()                # Close the connection
             exit()
@@ -110,10 +104,8 @@ if args.mode == "server":
 
 #client mode
 elif args.mode == "client":
-    print ("client")
     s = socket.socket()         # Create a socket object
     host = args.ip            # Get local machine name
-    print (host)
     port = args.port              # Reserve a port for your service.
 
     s.connect((host, port))
@@ -125,11 +117,7 @@ elif args.mode == "client":
     board = s.recv(k,socket.MSG_WAITALL)
 
     n = n.decode('utf-8')
-    print('n ='+n)
     N = int(n)
-    if N == 3:
-        print("YES")
-
     #while user doesn't won or lost
     while N != 4 and N != 5:
         print("Board:" + board.decode('utf-8') + "(" + n + " guesses left)")
