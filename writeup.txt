@@ -1,0 +1,13 @@
+Lai Yan Yung
+10/16/2017
+
+All the functions work fine for client and server. But I didn't work on to make 
+sure the argument for server to pass the word to be only character. 
+
+I opened multiple terminals to run the client and see can it support multiple 
+clients at the same time. Also I tried to test on different computer, so server 
+on one and client on the other one.
+
+I think the most challenging part is the 4 bytes headers for send and recv, as 
+it make the code become more complicated. Also fork is a little bit difficult 
+for me, cause I am not so familiar about using fork.
