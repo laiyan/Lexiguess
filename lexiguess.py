@@ -1,148 +1,150 @@
+''' Server and client for a simple hangman game. '''
 import argparse
-import sys
 import socket               # Import socket module
 import os#  Low level modules for threading and handling signals
 import signal
 import struct
 
 #argument
-parser = argparse.ArgumentParser(
+PARSER = argparse.ArgumentParser(
     description='LexiGuess,Networked program with server-client options for guessing a word.')
-parser.add_argument("--mode", action='store', metavar='m', help="client or server mode")
-parser.add_argument("--port", type=int, metavar='p', help="port number")
-parser.add_argument("--word", metavar='w', help="word to be guessed")
-parser.add_argument("--ip", metavar='i', help="IP address for client")
-args = parser.parse_args()
+PARSER.add_argument("--mode", action='store', metavar='m', help="client or server mode")
+PARSER.add_argument("--PORT", type=int, metavar='p', help="PORT number")
+PARSER.add_argument("--word", metavar='w', help="word to be guessed")
+PARSER.add_argument("--ip", metavar='i', help="IP address for client")
+ARGS = PARSER.parse_args()
 
 #guess letter method
-def getChar():
-    inputChar = input("Enter Guess: ")
-    allowedChars = 'abcdefghijklmnopqrstuvwxyz'
-    while len(inputChar) != 1 or inputChar not in allowedChars:
-        inputChar = input("Enter Guess: ")
-    return inputChar
+def get_char():
+    ''' for inputing the guess letter. '''
+    inputchar = input("Enter Guess: ")
+    allowed = 'abcdefghijklmnopqrstuvwxyz'
+    while len(inputchar) != 1 or inputchar not in allowed:
+        inputchar = input("Enter Guess: ")
+    return inputchar
 
 #game method for server
 def game():
-    word = []        # Bind to the port
-    word = args.word
+    ''' Game Function for the server. '''
+    word = []        # Bind to the PORT
+    word = ARGS.word
     k = len(word)
-    board = []
+    BOARD = []
 
-    #dashline for board
+    #dashline for BOARD
     for i in range(0, k):
-        board.append(i)
-        board[i] = "_"
-    b = ''.join(board)
-    n = 3
+        BOARD.append(i)
+        BOARD[i] = "_"
+    B = ''.join(BOARD)
+    N = 3
     check = 0
 
     #if need to check and still have guess
-    while check == 0 and n > 0:
-        c.send(struct.pack(">i", 1))
-        c.send(str(n).encode('utf-8'))
-        c.send(struct.pack(">i", k))
-        c.send(b.encode('utf-8'))
+    while check == 0 and N > 0:
+        C.send(struct.pack(">i", 1))
+        C.send(str(N).encode('utf-8'))
+        C.send(struct.pack(">i", k))
+        C.send(B.encode('utf-8'))
 
-        h = (c.recv(4, socket.MSG_WAITALL))
-        h = int.from_bytes(h, byteorder='big')
-        guess = c.recv(h, socket.MSG_WAITALL) #recieve guess letter
+        H = (C.recv(4, socket.MSG_WAITALL))
+        H = int.from_bytes(H, byteorder='big')
+        guess = C.recv(H, socket.MSG_WAITALL) #recieve guess letter
         guess = guess.decode('utf-8')
         check = 1
         #check letter with the word
         for i in range(0, k):
 
-            if board[i] == guess:
+            if BOARD[i] == guess:
                 check = 1
                 break
 
             #replace word by the guess letter
-            if board[i] == "_" and word[i] == guess:
-                board[i] = guess
+            if BOARD[i] == "_" and word[i] == guess:
+                BOARD[i] = guess
                 check = 0
 
 
-        b = ''.join(board)
+        B = ''.join(BOARD)
         if check:       #if check is 1 decrement guess by 1
-            n = n-1
+            N = N-1
 
         check = 1       #reset check
 
         #check is there still missing letter if yes keep the game
         for i in range(0, k):
-            if board[i] == "_":
+            if BOARD[i] == "_":
                 check = 0       #do not decrement guess
                 break
 
     if check:   #if check is 1 client has won
-        c.send(struct.pack(">i", 1))
-        c.send(str(5).encode('utf-8')) #send 5 for won
-        c.send(struct.pack(">i", k))
-        c.send(b.encode('utf-8'))
+        C.send(struct.pack(">i", 1))
+        C.send(str(5).encode('utf-8')) #send 5 for won
+        C.send(struct.pack(">i", k))
+        C.send(B.encode('utf-8'))
 
     else:
         #if chclient has lost
-        c.send(struct.pack(">i", 1))
-        c.send(str(4).encode('utf-8')) #send 4 for lost
-        c.send(struct.pack(">i", k))
-        c.send(b.encode('utf-8'))
+        C.send(struct.pack(">i", 1))
+        C.send(str(4).encode('utf-8')) #send 4 for lost
+        C.send(struct.pack(">i", k))
+        C.send(B.encode('utf-8'))
 
 #if arg is server
-if args.mode == "server":
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
-    host = args.ip
-    port = args.port                # Reserve a port for your service.
-    s.bind((host, port))
-    s.listen(5)                 # Now wait for client connection.
+if ARGS.mode == "server":
+    S = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         # Create a socket object
+    HOST = ARGS.ip
+    PORT = ARGS.port               # Reserve a PORT for your service.
+    S.bind((HOST, PORT))
+    S.listen(5)                 # Now wait for client connection.
     while True:
-        c, addr = s.accept()     # Establish connection with client. This where server waits
+        C, ADDR = S.accept()     # Establish connection with client. This where server waits
         signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-        pid = os.fork()
-        if pid == 0:
+        PID = os.fork()
+        if PID == 0:
             game()
-            c.close()                # Close the connection
+            C.close()                # Close the connection
             exit()
-    #s.close()
+    #S.close()
 
 #client mode
-elif args.mode == "client":
-    s = socket.socket()         # Create a socket object
-    host = args.ip            # Get local machine name
-    port = args.port              # Reserve a port for your service.
+elif ARGS.mode == "client":
+    S = socket.socket()         # Create a socket object
+    HOST = ARGS.ip            # Get local machine name
+    PORT = ARGS.port              # Reserve a PORT for your service.
 
-    s.connect((host, port))
-    h = (s.recv(4, socket.MSG_WAITALL))
-    h = int.from_bytes(h, byteorder='big')
-    n = s.recv(h, socket.MSG_WAITALL)
-    k = (s.recv(4, socket.MSG_WAITALL))
+    S.connect((HOST, PORT))
+    H = (S.recv(4, socket.MSG_WAITALL))
+    H = int.from_bytes(H, byteorder='big')
+    N = S.recv(H, socket.MSG_WAITALL)
+    k = (S.recv(4, socket.MSG_WAITALL))
     k = int.from_bytes(k, byteorder='big')
-    board = s.recv(k, socket.MSG_WAITALL)
+    BOARD = S.recv(k, socket.MSG_WAITALL)
 
-    n = n.decode('utf-8')
-    N = int(n)
+    N = N.decode('utf-8')
+    N = int(N)
     #while user doesn't won or lost
     while N != 4 and N != 5:
-        print("Board:" + board.decode('utf-8') + "(" + n + " guesses left)")
-        l = getChar()
-        s.send(struct.pack(">i", 1))
-        s.send(str(l).encode('utf-8'))
-        gn = n
-        h = (s.recv(4, socket.MSG_WAITALL))
-        h = int.from_bytes(h, byteorder='big')
-        n = s.recv(h, socket.MSG_WAITALL)
-        n = n.decode('utf-8')
-        N = int(n)
-        k = (s.recv(4, socket.MSG_WAITALL))
+        print("Board:" + BOARD.decode('utf-8') + "(" + N + " guesses left)")
+        L = get_char()
+        S.send(struct.pack(">i", 1))
+        S.send(str(L).encode('utf-8'))
+        GN = N
+        H = (S.recv(4, socket.MSG_WAITALL))
+        H = int.from_bytes(H, byteorder='big')
+        N = S.recv(H, socket.MSG_WAITALL)
+        N = N.decode('utf-8')
+        N = int(N)
+        k = (S.recv(4, socket.MSG_WAITALL))
         k = int.from_bytes(k, byteorder='big')
-        board = s.recv(k, socket.MSG_WAITALL)
+        BOARD = S.recv(k, socket.MSG_WAITALL)
 
     #if won or lost
-    print("Board:" + board.decode('utf-8') + "(" + gn + " guesses left)")
+    print("Board:" + BOARD.decode('utf-8') + "(" + GN + " guesses left)")
     if N == 4:
         print("You lost")
     elif N == 5:
         print(" You won")
-    s.close                     # Close the socket when done
+    #S.close                     # Close the socket when done
 
 #wrong argument for mode
 else:
