@@ -1,23 +1,25 @@
 import argparse
 import sys
 import socket               # Import socket module
-import os, signal #  Low level modules for threading and handling signals
+import os#  Low level modules for threading and handling signals
+import signal
 import struct
 
 #argument
-parser = argparse.ArgumentParser(description='LexiGuess, Networked program with server-client options for guessing a word.')
-parser.add_argument("--mode", action='store', metavar='m',help="client or server mode")
+parser = argparse.ArgumentParser(
+    description='LexiGuess,Networked program with server-client options for guessing a word.')
+parser.add_argument("--mode", action='store', metavar='m', help="client or server mode")
 parser.add_argument("--port", type=int, metavar='p', help="port number")
-parser.add_argument("--word",metavar='w' ,help="word to be guessed")
-parser.add_argument("--ip",metavar='i' ,help="IP address for client")
+parser.add_argument("--word", metavar='w', help="word to be guessed")
+parser.add_argument("--ip", metavar='i', help="IP address for client")
 args = parser.parse_args()
 
 #guess letter method
 def getChar():
     inputChar = input("Enter Guess: ")
-    allowedChars= 'abcdefghijklmnopqrstuvwxyz'
-    while (len(inputChar) != 1 or inputChar not in allowedChars):
-        inputChar =input("Enter Guess: ")
+    allowedChars = 'abcdefghijklmnopqrstuvwxyz'
+    while len(inputChar) != 1 or inputChar not in allowedChars:
+        inputChar = input("Enter Guess: ")
     return inputChar
 
 #game method for server
@@ -28,7 +30,7 @@ def game():
     board = []
 
     #dashline for board
-    for i in range(0,k):
+    for i in range(0, k):
         board.append(i)
         board[i] = "_"
     b = ''.join(board)
@@ -37,22 +39,22 @@ def game():
 
     #if need to check and still have guess
     while check == 0 and n > 0:
-        c.send(struct.pack(">i",1))
+        c.send(struct.pack(">i", 1))
         c.send(str(n).encode('utf-8'))
-        c.send(struct.pack(">i",k))
-        c.send(b.encode('utf-8'));
+        c.send(struct.pack(">i", k))
+        c.send(b.encode('utf-8'))
 
         h = (c.recv(4, socket.MSG_WAITALL))
-        h = int.from_bytes(h,byteorder = 'big')
-        guess = c.recv(h,socket.MSG_WAITALL) #recieve guess letter
+        h = int.from_bytes(h, byteorder='big')
+        guess = c.recv(h, socket.MSG_WAITALL) #recieve guess letter
         guess = guess.decode('utf-8')
         check = 1
         #check letter with the word
-        for i in range(0,k):
+        for i in range(0, k):
 
             if board[i] == guess:
                 check = 1
-                break;
+                break
 
             #replace word by the guess letter
             if board[i] == "_" and word[i] == guess:
@@ -67,23 +69,23 @@ def game():
         check = 1       #reset check
 
         #check is there still missing letter if yes keep the game
-        for i in range(0,k):
+        for i in range(0, k):
             if board[i] == "_":
                 check = 0       #do not decrement guess
                 break
 
     if check:   #if check is 1 client has won
-        c.send(struct.pack(">i",1))
+        c.send(struct.pack(">i", 1))
         c.send(str(5).encode('utf-8')) #send 5 for won
-        c.send(struct.pack(">i",k))
-        c.send(b.encode('utf-8'));
+        c.send(struct.pack(">i", k))
+        c.send(b.encode('utf-8'))
 
     else:
         #if chclient has lost
-        c.send(struct.pack(">i",1))
+        c.send(struct.pack(">i", 1))
         c.send(str(4).encode('utf-8')) #send 4 for lost
-        c.send(struct.pack(">i",k))
-        c.send(b.encode('utf-8'));
+        c.send(struct.pack(">i", k))
+        c.send(b.encode('utf-8'))
 
 #if arg is server
 if args.mode == "server":
@@ -110,11 +112,11 @@ elif args.mode == "client":
 
     s.connect((host, port))
     h = (s.recv(4, socket.MSG_WAITALL))
-    h = int.from_bytes(h,byteorder = 'big')
-    n = s.recv(h,socket.MSG_WAITALL)
-    k =(s.recv(4, socket.MSG_WAITALL))
-    k = int.from_bytes(k, byteorder = 'big')
-    board = s.recv(k,socket.MSG_WAITALL)
+    h = int.from_bytes(h, byteorder='big')
+    n = s.recv(h, socket.MSG_WAITALL)
+    k = (s.recv(4, socket.MSG_WAITALL))
+    k = int.from_bytes(k, byteorder='big')
+    board = s.recv(k, socket.MSG_WAITALL)
 
     n = n.decode('utf-8')
     N = int(n)
@@ -122,17 +124,17 @@ elif args.mode == "client":
     while N != 4 and N != 5:
         print("Board:" + board.decode('utf-8') + "(" + n + " guesses left)")
         l = getChar()
-        s.send(struct.pack(">i",1))
+        s.send(struct.pack(">i", 1))
         s.send(str(l).encode('utf-8'))
         gn = n
         h = (s.recv(4, socket.MSG_WAITALL))
-        h = int.from_bytes(h,byteorder = 'big')
-        n = s.recv(h,socket.MSG_WAITALL)
+        h = int.from_bytes(h, byteorder='big')
+        n = s.recv(h, socket.MSG_WAITALL)
         n = n.decode('utf-8')
         N = int(n)
-        k =(s.recv(4, socket.MSG_WAITALL))
-        k = int.from_bytes(k, byteorder = 'big')
-        board = s.recv(k,socket.MSG_WAITALL)
+        k = (s.recv(4, socket.MSG_WAITALL))
+        k = int.from_bytes(k, byteorder='big')
+        board = s.recv(k, socket.MSG_WAITALL)
 
     #if won or lost
     print("Board:" + board.decode('utf-8') + "(" + gn + " guesses left)")
