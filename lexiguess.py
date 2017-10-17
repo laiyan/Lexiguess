@@ -9,7 +9,7 @@ import struct
 PARSER = argparse.ArgumentParser(
     description='LexiGuess,Networked program with server-client options for guessing a word.')
 PARSER.add_argument("--mode", action='store', metavar='m', help="client or server mode")
-PARSER.add_argument("--PORT", type=int, metavar='p', help="PORT number")
+PARSER.add_argument("--port", type=int, metavar='p', help="port number")
 PARSER.add_argument("--word", metavar='w', help="word to be guessed")
 PARSER.add_argument("--ip", metavar='i', help="IP address for client")
 ARGS = PARSER.parse_args()
@@ -115,34 +115,34 @@ elif ARGS.mode == "client":
     S.connect((HOST, PORT))
     H = (S.recv(4, socket.MSG_WAITALL))
     H = int.from_bytes(H, byteorder='big')
-    N = S.recv(H, socket.MSG_WAITALL)
+    NC = S.recv(H, socket.MSG_WAITALL)
     k = (S.recv(4, socket.MSG_WAITALL))
     k = int.from_bytes(k, byteorder='big')
-    BOARD = S.recv(k, socket.MSG_WAITALL)
+    BOARDC = S.recv(k, socket.MSG_WAITALL)
 
-    N = N.decode('utf-8')
-    N = int(N)
+    NC = NC.decode('utf-8')
+    NC = int(NC)
     #while user doesn't won or lost
-    while N != 4 and N != 5:
-        print("Board:" + BOARD.decode('utf-8') + "(" + N + " guesses left)")
+    while NC != 4 and NC != 5:
+        print("Board:" + BOARDC.decode('utf-8') + "(" + str(NC) + " guesses left)")
         L = get_char()
         S.send(struct.pack(">i", 1))
         S.send(str(L).encode('utf-8'))
-        GN = N
+        GN = NC
         H = (S.recv(4, socket.MSG_WAITALL))
         H = int.from_bytes(H, byteorder='big')
-        N = S.recv(H, socket.MSG_WAITALL)
-        N = N.decode('utf-8')
-        N = int(N)
+        NC = S.recv(H, socket.MSG_WAITALL)
+        NC = NC.decode('utf-8')
+        NC = int(NC)
         k = (S.recv(4, socket.MSG_WAITALL))
         k = int.from_bytes(k, byteorder='big')
-        BOARD = S.recv(k, socket.MSG_WAITALL)
+        BOARDC = S.recv(k, socket.MSG_WAITALL)
 
     #if won or lost
-    print("Board:" + BOARD.decode('utf-8') + "(" + GN + " guesses left)")
-    if N == 4:
+    print("Board:" + BOARDC.decode('utf-8') + "(" + str(GN) + " guesses left)")
+    if NC == 4:
         print("You lost")
-    elif N == 5:
+    elif NC == 5:
         print(" You won")
     #S.close                     # Close the socket when done
 
